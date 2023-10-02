@@ -8,15 +8,16 @@ RUN apt-get update && apt-get install -y curl jq && \
     rm -rf /var/lib/apt/lists/*
 
 # install azure CLI
-RUN apt-get update && apt-get install -y curl jq gnupg apt-transport-https lsb-release && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null && \
-    chmod go+r /etc/apt/keyrings/microsoft.gpg && \
-    echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ `lsb_release -cs` main" | tee /etc/apt/sources.list.d/azure-cli.list && \
-    apt-get update && \
-    apt-get install -y azure-cli && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+COPY features/azure-cli/install.sh ./install.sh
+RUN chmod +x ./install.sh && \
+    _REMOTE_USER=runner ./install.sh && \
+    rm ./install.sh
+
+# intall terraform
+COPY features/terraform/install.sh ./install.sh
+RUN chmod +x ./install.sh && \
+    _REMOTE_USER=runner ./install.sh && \
+    rm ./install.sh
 
 COPY github-actions-runner/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
